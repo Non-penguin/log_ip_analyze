@@ -4,6 +4,9 @@ mkdir -p /ip_logs
 
 INPUT_LOG="/var/log/application.log"
 
+# Discord Webhook URL (Paste your webhook URL here)
+DISCORD_WEBHOOK_URL=""
+
 if [ ! -f "$INPUT_LOG" ]; then
     echo "Error: Log file '$INPUT_LOG' not found."
     exit 1
@@ -37,6 +40,11 @@ grep "Failed" "$INPUT_LOG" | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]
 
     echo "Checking IP: $ip - Country: $country"
     echo "$ip,$country" >> "$OUTPUT_CSV"
+
+    if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+        PAYLOAD="{\"content\": \"Suspicious access detected from IP: **$ip** (Country: $country)\"}"
+        curl -s -H "Content-Type: application/json" -X POST -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL" > /dev/null
+    fi
 
     sleep 0.5
 done
